@@ -12,8 +12,11 @@ import {
 import { createAttachment, savePatientIdentifier, savePersonAttribute, saveProgramEnrollment } from '../../api';
 import { hasRendering, hasSubmission } from '../../utils/common-utils';
 import dayjs from 'dayjs';
-import { assignedObsIds, constructObs, voidObs } from '../../adapters/obs-adapter';
+import utc from 'dayjs/plugin/utc';
 import { type FormContextProps } from '../../provider/form-provider';
+import { assignedObsIds, constructObs, voidObs } from '../../adapters/obs-adapter';
+
+dayjs.extend(utc);
 import { ConceptTrue } from '../../constants';
 import { DefaultValueValidator } from '../../validators/default-value-validator';
 import { cloneRepeatField } from '../../components/repeat/helpers';
@@ -35,6 +38,12 @@ export function prepareEncounter(
   const ordersForSubmission = prepareOrders(allFormFields);
   const diagnosesForSubmission = prepareDiagnosis(allFormFields);
 
+  // Convert local Date to a UTC string for cases where encounterDate is a raw Date
+  // (e.g. sessionDate fallback when no encounterDatetime field exists in the form).
+  // If it's already a string (formatted by EncounterDatetimeAdapter), pass it through unchanged.
+  const formattedEncounterDate =
+    encounterDate instanceof Date ? dayjs(encounterDate).utc().format('YYYY-MM-DD HH:mm:ss') : encounterDate;
+
   let encounterForSubmission: OpenmrsEncounter = {};
 
   if (encounter) {
@@ -54,7 +63,7 @@ export function prepareEncounter(
       ];
     }
     // TODO: Question: Should we be editing the location, form and visit here?
-    encounterForSubmission.encounterDatetime = encounterDate;
+    encounterForSubmission.encounterDatetime = formattedEncounterDate;
     encounterForSubmission.location = location;
     encounterForSubmission.form = {
       uuid: formJson.uuid,
@@ -68,7 +77,7 @@ export function prepareEncounter(
   } else {
     encounterForSubmission = {
       patient: patient.id,
-      encounterDatetime: encounterDate,
+      encounterDatetime: formattedEncounterDate,
       location: location,
       encounterType: formJson.encounterType,
       encounterProviders: [

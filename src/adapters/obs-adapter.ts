@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import { ConceptTrue, codedTypes } from '../constants';
 import {
   type Attachment,
@@ -126,7 +128,8 @@ function extractFieldValue(field: FormField, obsList: OpenmrsObs[] = [], makeFie
     assignedObsIds.push(obs.uuid);
     if (typeof obs.value === 'string' || typeof obs.value === 'number') {
       if (rendering.startsWith('date')) {
-        const dateObject = parseToLocalDateTime(obs.value as string);
+        // Parse as UTC and convert to local time so the timepicker displays the correct local time
+        const dateObject = dayjs.utc(obs.value as string).local().toDate();
         if (makeFieldDirty) {
           const obsObject = field.meta.initialValue.omrsObject as OpenmrsObs;
           obsObject.value = dayjs(dateObject).format('YYYY-MM-DD HH:mm');
@@ -185,11 +188,14 @@ function formatDateByPickerType(field: FormField, value: Date) {
   if (field.datePickerFormat) {
     switch (field.datePickerFormat) {
       case 'calendar':
+        // Date only — no timezone conversion needed
         return dayjs(value).format('YYYY-MM-DD');
       case 'timer':
-        return dayjs(value).format('HH:mm');
+        // Time only — convert local time to UTC so the server stores the correct UTC time
+        return dayjs(value).utc().format('HH:mm');
       case 'both':
-        return dayjs(value).format('YYYY-MM-DD HH:mm');
+        // Datetime — convert local time to UTC so the server stores the correct UTC time
+        return dayjs(value).utc().format('YYYY-MM-DD HH:mm');
       default:
         return dayjs(value).format('YYYY-MM-DD');
     }
