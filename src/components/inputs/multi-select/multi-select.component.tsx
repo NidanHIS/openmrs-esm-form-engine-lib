@@ -109,23 +109,32 @@ const MultiSelect: React.FC<FormFieldInputProps> = ({ field, value, errors, warn
                 warnText={warnings[0]?.message}
               />
             ) : (
-              <CheckboxGroup legendText={<FieldLabel field={field} />} readOnly={isTrue(field.readonly)}>
-                {selectOptions?.map((value, index) => {
-                  return (
-                    <Checkbox
-                      className={styles.checkbox}
-                      checked={initiallyCheckedQuestionItems.some((item) => item === value.concept)}
-                      disabled={value.disabled}
-                      id={`${field.id}-${value.concept}`}
-                      key={`${field.id}-${value.concept}-${index}`}
-                      labelText={t(value.label)}
-                      name={value.concept}
-                      onChange={() => handleSelectCheckbox(value)}
-                      readOnly={isTrue(field.readonly)}
-                    />
-                  );
-                })}
-              </CheckboxGroup>
+              <>
+                <label className="cds--label">
+                  <FieldLabel field={field} />
+                </label>
+                <CheckboxGroup
+                  className={styles.checkboxGroupBordered}
+                  legendText=""
+                  readOnly={isTrue(field.readonly)}
+                  orientation={field.questionOptions?.orientation || 'horizontal'}>
+                  {selectOptions?.map((value, index) => {
+                    return (
+                      <Checkbox
+                        className={styles.checkbox}
+                        checked={initiallyCheckedQuestionItems.some((item) => item === value.concept)}
+                        disabled={value.disabled}
+                        id={`${field.id}-${value.concept}`}
+                        key={`${field.id}-${value.concept}-${index}`}
+                        labelText={t(value.label)}
+                        name={value.concept}
+                        onChange={() => handleSelectCheckbox(value)}
+                        readOnly={isTrue(field.readonly)}
+                      />
+                    );
+                  })}
+                </CheckboxGroup>
+              </>
             )}
           </Layer>
         </div>

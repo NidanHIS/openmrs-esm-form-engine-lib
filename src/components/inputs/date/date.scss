@@ -21,17 +21,28 @@
   flex-direction: row;
   flex-wrap: wrap;
 
-  > .datePickerSpacing {
+  >.datePickerSpacing {
     margin-right: 1rem;
   }
 }
 
 .timeInput {
   width: auto;
+
   :hover {
     cursor: text;
   }
+
   :focus {
     cursor: text;
   }
+
+  :global(.cds--time-picker__input-field) {
+    width: auto;
+  }
+}
+
+.clearButtonContainer {
+  align-self: flex-end;
+  margin-left: 0.5rem;
 }

@@ -1,7 +1,7 @@
 @use '@carbon/colors';
 
 .boldedLabel label,
-legend > span {
+legend>span {
   font-weight: 600;
   color: colors.$black-100;
 }
@@ -22,4 +22,16 @@ legend > span {
 .checkbox label {
   color: colors.$black-100 !important;
   font-weight: 500 !important;
+}
+
+.checkboxGroupBordered {
+  padding: 10px;
+  border: 1px solid colors.$gray-30;
+  background-color: colors.$white;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+
+  legend {
+    display: none;
+  }
 }

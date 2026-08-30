@@ -15,7 +15,13 @@ import FieldLabel from '../../field-label/field-label.component';
 import FieldValueView from '../../value/view/field-value-view.component';
 import styles from './multi-select.scss';
 
-const MultiProviderSelect: React.FC<FormFieldInputProps> = ({ field, errors, warnings, setFieldValue }) => {
+const MultiProviderSelect: React.FC<FormFieldInputProps> = ({
+  field,
+  value = [],
+  errors,
+  warnings,
+  setFieldValue,
+}) => {
   const { t } = useTranslation();
   const [items, setItems] = useState<OpenmrsResource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +36,6 @@ const MultiProviderSelect: React.FC<FormFieldInputProps> = ({ field, errors, war
     workspaceLayout,
     methods: { control },
   } = useFormProviderContext();
-
-  const value: string[] = useWatch({ control, name: field.id, exact: true }) ?? [];
 
   const isInline = useMemo(() => {
     if (isViewMode(sessionMode) || isTrue(field.readonly)) {
@@ -77,6 +81,47 @@ const MultiProviderSelect: React.FC<FormFieldInputProps> = ({ field, errors, war
       ignore = true;
     };
   }, [dataSource]);
+
+  // Fetch selected providers in edit mode that are missing from the preloaded list
+  useEffect(() => {
+    if (!dataSource || !value?.length || sessionMode === 'enter') return;
+    let ignore = false;
+
+    const missingUuids = value.filter((uuid) => !items.some((item) => item.uuid === uuid));
+
+    if (missingUuids.length > 0) {
+      Promise.all(
+        missingUuids.map((uuid) =>
+          dataSource.fetchSingleItem(uuid).catch((err) => {
+            console.error(`Failed to fetch provider ${uuid}:`, err);
+            return null;
+          }),
+        ),
+      ).then((fetchedItems) => {
+        if (ignore) return;
+        const validItems = fetchedItems
+          .filter(Boolean)
+          .map((item) => dataSource.toUuidAndDisplay(item));
+
+        if (validItems.length > 0) {
+          setItems((prevItems) => {
+            const newItems = [...prevItems];
+            validItems.forEach((mappedItem) => {
+              if (!newItems.some((i) => i.uuid === mappedItem.uuid)) {
+                newItems.push(mappedItem);
+              }
+            });
+            return newItems;
+          });
+          setItemsLoadedKey((k) => k + 1);
+        }
+      });
+    }
+
+    return () => {
+      ignore = true;
+    };
+  }, [dataSource, value, items.length, sessionMode]);
 
   // Items currently selected according to form state
   const selectedItems = useMemo(

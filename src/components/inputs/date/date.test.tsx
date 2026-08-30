@@ -53,6 +53,22 @@ describe('DateField Component', () => {
     expect(screen.getByText('Time')).toBeInTheDocument();
   });
 
+  it('should render clear button and call setFieldValue with null on click', async () => {
+    await renderDateField({
+      field: dateFieldMock,
+      value: new Date(),
+      errors: [],
+      warnings: [],
+      setFieldValue: mockSetFieldValue,
+    });
+
+    const clearButton = screen.getByRole('button', { name: /clear/i });
+    expect(clearButton).toBeInTheDocument();
+
+    await act(() => clearButton.click());
+    expect(mockSetFieldValue).toHaveBeenCalledWith(null);
+  });
+
   it('should display error message when there are errors', async () => {
     await renderDateField({
       field: dateFieldMock,

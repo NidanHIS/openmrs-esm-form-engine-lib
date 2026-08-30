@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { Layer, TimePicker } from '@carbon/react';
+import { Button, Layer, TimePicker } from '@carbon/react';
+import { Close } from '@carbon/react/icons';
 import { OpenmrsDatePicker } from '@openmrs/esm-framework';
 import { formatDateAsDisplayString } from '../../../utils/common-utils';
 import { isEmpty } from '../../../validators/form-validator';
@@ -32,6 +33,11 @@ const DateField: React.FC<FormFieldInputProps> = ({ field, value: dateValue, err
     [setFieldValue, time],
   );
 
+  const handleClear = useCallback(() => {
+    setTime('');
+    setFieldValue(null);
+  }, [setFieldValue]);
+
   const setTimeIfPresent = useCallback((date: Date, time: string) => {
     if (!isEmpty(time)) {
       const [hours, minutes] = time.split(':').map(Number);
@@ -59,6 +65,8 @@ const DateField: React.FC<FormFieldInputProps> = ({ field, value: dateValue, err
         const minutes = dateValue.getMinutes() < 10 ? `0${dateValue.getMinutes()}` : `${dateValue.getMinutes()}`;
         setTime([hours, minutes].join(':'));
       }
+    } else {
+      setTime('');
     }
   }, [dateValue]);
 
@@ -133,6 +141,20 @@ const DateField: React.FC<FormFieldInputProps> = ({ field, value: dateValue, err
             </Layer>
           </div>
         ) : null}
+
+        {dateValue && !field.isDisabled && !isTrue(field.readonly) && (
+          <div className={styles.clearButtonContainer}>
+            <Button
+              hasIconOnly
+              renderIcon={(props) => <Close size={16} {...props} />}
+              iconDescription={t('clear', 'Clear')}
+              tooltipPosition="bottom"
+              kind="ghost"
+              size="md"
+              onClick={handleClear}
+            />
+          </div>
+        )}
       </div>
     )
   );

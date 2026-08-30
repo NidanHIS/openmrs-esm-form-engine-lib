@@ -34,3 +34,62 @@
   color: colors.$red-60;
   font-size: 0.8rem;
 }
+
+.tabSelector {
+  :global {
+    .cds--radio-button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .cds--radio-button-wrapper {
+      margin-right: 0;
+    }
+
+    .cds--radio-button__label {
+      padding: 0.5rem 1rem;
+      border: 1px solid colors.$gray-30;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background-color: colors.$white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &::before,
+      &::after {
+        display: none; // Hide the default radio circles
+      }
+
+      &:hover {
+        background-color: colors.$gray-10;
+        border-color: colors.$gray-40;
+      }
+
+      .cds--radio-button__label-text {
+        padding-left: 0;
+        margin-left: 0;
+        font-weight: 500;
+      }
+    }
+
+    .cds--radio-button:checked + .cds--radio-button__label {
+      background-color: colors.$blue-60;
+      border-color: colors.$blue-60;
+      color: colors.$white;
+
+      .cds--radio-button__label-text {
+        color: colors.$white;
+      }
+    }
+
+    .cds--label+.cds--form-item .cds--radio-button-group {
+      padding: 10px;
+      border: 1px solid gray;
+      background: white;
+    }
+  }
+}

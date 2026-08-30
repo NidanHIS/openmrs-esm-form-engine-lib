@@ -17,7 +17,7 @@ import FieldLabel from '../../field-label/field-label.component';
 import FieldValueView from '../../value/view/field-value-view.component';
 import styles from './ui-select-extended.scss';
 
-const UiSelectExtended: React.FC<FormFieldInputProps> = ({ field, errors, warnings, setFieldValue }) => {
+const UiSelectExtended: React.FC<FormFieldInputProps> = ({ field, value, errors, warnings, setFieldValue }) => {
   const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +35,6 @@ const UiSelectExtended: React.FC<FormFieldInputProps> = ({ field, errors, warnin
     methods: { control, getFieldState },
   } = useFormProviderContext();
 
-  const value = useWatch({ control, name: field.id, exact: true });
   const { isDirty } = getFieldState(field.id);
 
   const isInline = useMemo(() => {
@@ -124,29 +123,41 @@ const UiSelectExtended: React.FC<FormFieldInputProps> = ({ field, errors, warnin
 
   useEffect(() => {
     let ignore = false;
-    if (value && !isDirty && dataSource && isSearchable && !items.length) {
-      // For search-based instances, fetch the initial item to resolve its display property
-      setIsLoading(true);
-      dataSource
-        .fetchSingleItem(value)
-        .then((item) => {
-          if (!ignore) {
-            setItems([dataSource.toUuidAndDisplay(item)]);
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          if (!ignore) {
-            console.error(error);
-            setIsLoading(false);
-          }
-        });
+    if (value && !isDirty && dataSource && sessionMode !== 'enter') {
+      const hasValueInItems = items.some((item) => item.uuid === value);
+      if (!hasValueInItems) {
+        if (!items.length) {
+          setIsLoading(true);
+        }
+        dataSource
+          .fetchSingleItem(value)
+          .then((item) => {
+            if (!ignore && item) {
+              const mappedItem = dataSource.toUuidAndDisplay(item);
+              setItems((prevItems) => {
+                if (prevItems.some((i) => i.uuid === mappedItem.uuid)) {
+                  return prevItems;
+                }
+                return [...prevItems, mappedItem];
+              });
+            }
+            if (!ignore) {
+              setIsLoading(false);
+            }
+          })
+          .catch((error) => {
+            if (!ignore) {
+              console.error(error);
+              setIsLoading(false);
+            }
+          });
+      }
     }
 
     return () => {
       ignore = true;
     };
-  }, [value, isDirty, dataSource, isSearchable, items]);
+  }, [value, isDirty, dataSource, items.length]);
 
   if (isLoading) {
     return <DropdownSkeleton />;
