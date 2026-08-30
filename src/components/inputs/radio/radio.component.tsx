@@ -35,7 +35,7 @@ const Radio: React.FC<FormFieldInputProps> = ({ field, value, errors, warnings, 
     !field.isHidden && (
       <FormGroup
         legendText={<FieldLabel field={field} />}
-        className={styles.boldedLegend}
+        className={`${styles.boldedLegend} ${styles.tabSelector}`}
         disabled={field.isDisabled}
         invalid={errors?.length > 0}>
         <RadioButtonGroup
@@ -43,7 +43,7 @@ const Radio: React.FC<FormFieldInputProps> = ({ field, value, errors, warnings, 
           valueSelected={value}
           onChange={handleChange}
           readOnly={isTrue(field.readonly)}
-          orientation={field.questionOptions?.orientation || 'vertical'}>
+          orientation={field.questionOptions?.orientation || 'horizontal'}>
           {field.questionOptions.answers
             .filter((answer) => !answer.isHidden)
             .map((answer, index) => {
