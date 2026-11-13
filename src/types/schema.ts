@@ -244,7 +244,38 @@ export type RenderType =
   | 'workspace-launcher'
   | 'markdown'
   | 'extension-widget'
-  | 'select-concept-answers';
+  | 'select-concept-answers'
+  /**
+   * Renders a datetime picker (date + time) with the time defaulting to the
+   * current time. Signals that submitting this form should also create (or
+   * update) an OpenMRS appointment.
+   * Pair with the `AppointmentSubmissionAction` post-submission action.
+   */
+  | 'appointment';
+
+/**
+ * Represents an OpenMRS appointment service as returned by
+ * `GET /ws/rest/v1/appointmentService/all/default`.
+ */
+export interface AppointmentService {
+  uuid: string;
+  name: string;
+  description?: string;
+  speciality?: {
+    name: string;
+    uuid: string;
+  };
+  startTime?: string;
+  endTime?: string;
+  maxAppointmentsLimit?: number | null;
+  durationMins?: number | null;
+  location?: {
+    uuid?: string;
+    display?: string;
+  };
+  color?: string;
+  initialAppointmentStatus?: string;
+}
 
 export interface FormReference {
   form: string;

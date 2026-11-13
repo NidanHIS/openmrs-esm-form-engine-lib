@@ -243,3 +243,116 @@ export function markPatientAsDeceased(
     signal: abortController.signal,
   });
 }
+
+// Appointment Services
+
+/**
+ * Fetches all active appointment services from the OpenMRS appointment module.
+ * Endpoint: GET /ws/rest/v1/appointmentService/all/default
+ *
+ * Returns a flat array (not a `{ results }` wrapper) — the response body is
+ * parsed directly.
+ */
+export function getAppointmentServices(): Promise<import('../types').AppointmentService[]> {
+  return openmrsFetch(`${restBaseUrl}/appointmentService/all/default`).then(({ data }) => data ?? []);
+}
+
+/**
+ * Payload shape for creating an OpenMRS appointment.
+ */
+export interface AppointmentPayload {
+  /** Present only when editing an existing appointment. */
+  uuid?: string;
+  appointmentKind: string;
+  serviceUuid: string;
+  startDateTime: string;
+  endDateTime: string;
+  patientUuid: string;
+  providers?: Array<{ uuid: string }>;
+  comments?: string;
+  locationUuid?: string;
+  appointmentNumber?: string;
+  status?: string;
+}
+
+/**
+ * Creates a new appointment via the OpenMRS appointment REST API.
+ * Endpoint: POST /ws/rest/v1/appointment
+ *
+ * When `payload.uuid` is present (edit mode), the same endpoint updates the
+ * existing appointment — the UUID is included in the request body.
+ */
+export function saveAppointment(payload: AppointmentPayload, abortController: AbortController) {
+  return openmrsFetch(`${restBaseUrl}/appointment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: payload,
+    signal: abortController.signal,
+  });
+}
+
+/**
+ * Fetches existing appointments for a patient.
+ * Used by `AppointmentSubmissionAction` in edit mode to find the appointment
+ * that should be updated.
+ */
+export function getAppointments(patientUuid: string, abortController?: AbortController) {
+  return openmrsFetch(`${restBaseUrl}/appointment?patient=${patientUuid}&v=full`, {
+    signal: abortController?.signal,
+  }).then(({ data }) => data?.results ?? []);
+}
+
+/**
+ * Checks for appointment conflicts before creating/updating.
+ * Endpoint: POST /ws/rest/v1/appointments/conflicts
+ *
+ * Returns the parsed response data. A 204 (no content) means no conflicts.
+ * A 200 with a body containing arrays like `PATIENT_DOUBLE_BOOKING` means conflicts exist.
+ */
+export function checkAppointmentConflicts(payload: AppointmentPayload, abortController: AbortController) {
+  return openmrsFetch(`${restBaseUrl}/appointments/conflicts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: payload,
+    signal: abortController.signal,
+  });
+}
+
+/**
+ * Updates the comment field on an existing obs.
+ * Used by `AppointmentSubmissionAction` to store the created appointment's UUID
+ * as a comment on the appointment date obs — no extra concept required.
+ */
+export function updateObsComment(obsUuid: string, comment: string, abortController: AbortController) {
+  return openmrsFetch(`${restBaseUrl}/obs/${obsUuid}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: { comment },
+    signal: abortController.signal,
+  });
+}
+
+/**
+ * Saves a standalone obs linked to an encounter.
+ * Used by `AppointmentSubmissionAction` to persist the created appointment's
+ * UUID so it can be retrieved on edit.
+ */
+export function saveObs(
+  payload: { person: string; concept: string; value: string; encounter?: string },
+  abortController: AbortController,
+) {
+  return openmrsFetch(`${restBaseUrl}/obs`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: payload,
+    signal: abortController.signal,
+  });
+}

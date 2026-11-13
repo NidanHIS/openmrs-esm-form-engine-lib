@@ -25,6 +25,14 @@ import { attachmentUrl, getAttachmentByUuid, type OpenmrsResource } from '@openm
 // Temporarily holds observations that have already been bound with matching fields
 export let assignedObsIds: string[] = [];
 
+/**
+ * Returns true for any rendering type that stores and displays a date value.
+ * Covers 'date', 'datetime', and the 'appointment' alias.
+ */
+function isDateLikeRendering(rendering: string): boolean {
+  return rendering.startsWith('date') || rendering === 'appointment';
+}
+
 export const ObsAdapter: FormFieldValueAdapter = {
   async getInitialValue(field: FormField, sourceObject: any, context: FormContextProps) {
     const encounter = sourceObject ?? (context.domainObjectValue as OpenmrsEncounter);
@@ -127,7 +135,7 @@ function extractFieldValue(field: FormField, obsList: OpenmrsObs[] = [], makeFie
     }
     assignedObsIds.push(obs.uuid);
     if (typeof obs.value === 'string' || typeof obs.value === 'number') {
-      if (rendering.startsWith('date')) {
+      if (isDateLikeRendering(rendering)) {
         // Parse as UTC and convert to local time so the timepicker displays the correct local time
         const dateObject = dayjs.utc(obs.value as string).local().toDate();
         if (makeFieldDirty) {
@@ -157,7 +165,7 @@ export function constructObs(field: FormField, value: any): Partial<OpenmrsObs> 
     field.type === 'obsGroup'
       ? { groupMembers: [] }
       : {
-          value: field.questionOptions.rendering.startsWith('date') ? formatDateByPickerType(field, value) : value,
+          value: isDateLikeRendering(field.questionOptions.rendering) ? formatDateByPickerType(field, value) : value,
         };
   return {
     ...draftObs,
@@ -173,7 +181,7 @@ export function voidObs(obs: OpenmrsObs) {
 
 export function editObs(field: FormField, newValue: any) {
   const oldObs = field.meta.initialValue?.omrsObject as OpenmrsResource;
-  const formattedValue = field.questionOptions.rendering.startsWith('date')
+  const formattedValue = isDateLikeRendering(field.questionOptions.rendering)
     ? formatDateByPickerType(field, newValue)
     : newValue;
   return {
@@ -211,7 +219,7 @@ export function hasPreviousObsValueChanged(field: FormField, newValue: any) {
   if (codedTypes.includes(field.questionOptions.rendering)) {
     return previousObs.value.uuid !== newValue;
   }
-  if (hasRendering(field, 'date')) {
+  if (hasRendering(field, 'date') || hasRendering(field, 'appointment')) {
     return dayjs(newValue).diff(dayjs(previousObs.value), 'D') !== 0;
   }
   if (hasRendering(field, 'datetime') || field.datePickerFormat === 'both') {

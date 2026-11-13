@@ -85,7 +85,11 @@ export interface DataSource<T> {
 
 export interface ControlTemplate {
   name: string;
-  datasource: DataSourceParameters;
+  /**
+   * Datasource backing this control's options.
+   * Optional — controls like `appointment` (a date picker) don't need one.
+   */
+  datasource?: DataSourceParameters;
 }
 
 export interface DataSourceParameters {

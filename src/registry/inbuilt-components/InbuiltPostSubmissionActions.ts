@@ -10,4 +10,8 @@ export const inbuiltPostSubmissionActions: Array<ComponentRegistration<PostSubmi
     name: 'MarkPatientAsDeceasedAction',
     load: () => import('../../post-submission-actions/mark-patient-deceased-action'),
   },
+  {
+    name: 'AppointmentSubmissionAction',
+    load: () => import('../../post-submission-actions/appointment-submission-action'),
+  },
 ];
