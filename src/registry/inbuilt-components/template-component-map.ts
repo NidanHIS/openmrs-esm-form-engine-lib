@@ -1,5 +1,6 @@
 import UiSelectExtended from '../../components/inputs/ui-select-extended/ui-select-extended.component';
 import MultiProviderSelect from '../../components/inputs/multi-select/multi-provider-select.component';
+import DateField from '../../components/inputs/date/date.component';
 
 export const templateToComponentMap = [
   {
@@ -33,5 +34,11 @@ export const templateToComponentMap = [
   {
     name: 'encounter-role',
     baseControlComponent: UiSelectExtended,
+  },
+  {
+    // 'appointment' renders the same DateField as 'date' — it's a date picker,
+    // not a datasource-backed select.
+    name: 'appointment',
+    baseControlComponent: DateField,
   },
 ];

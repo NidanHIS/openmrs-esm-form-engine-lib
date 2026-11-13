@@ -251,7 +251,7 @@ export async function getRegisteredDataSource(name: string): Promise<DataSource<
   let ds = inbuiltDataSources.find((dataSource) => dataSource.name === name)?.component;
   if (!ds) {
     const template = getControlTemplate(name);
-    if (template) {
+    if (template?.datasource) {
       ds = inbuiltDataSources.find((dataSource) => dataSource.name === template.datasource.name)?.component;
     } else {
       const dataSourceImport = await getFormsStore()

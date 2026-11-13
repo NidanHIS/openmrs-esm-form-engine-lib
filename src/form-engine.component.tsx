@@ -213,7 +213,9 @@ const FormEngine = ({
 
 function I18FormEngine(props: FormEngineProps) {
   return (
-    <I18nextProvider i18n={window.i18next} defaultNS={formEngineAppName}>
+    <I18nextProvider
+      i18n={window.i18next as import('i18next').i18n}
+      defaultNS={formEngineAppName}>
       <FormEngine {...props} />
     </I18nextProvider>
   );

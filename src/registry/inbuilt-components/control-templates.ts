@@ -62,6 +62,12 @@ export const controlTemplates: Array<ControlTemplate> = [
       },
     },
   },
+  {
+    // 'appointment' is a calendar date picker (same as 'date') that signals
+    // a post-submission action should create an OpenMRS appointment.
+    // No datasource is needed — it renders DateField, not a select dropdown.
+    name: 'appointment',
+  },
 ];
 
 export const getControlTemplate = (name: string) => {

@@ -186,6 +186,16 @@ function transformByRendering(question: FormField) {
     case 'datetime':
       question.datePickerFormat = question.datePickerFormat ?? 'both';
       break;
+    case 'appointment':
+      // Datetime picker (date + time) — always use 'both' regardless of what
+      // the form JSON specifies, because appointment slots need a time component.
+      // The time picker defaults to the current time so the user doesn't have to
+      // set it manually each visit.
+      question.datePickerFormat = 'both';
+      if (!question.questionOptions.defaultValue) {
+        question.questionOptions.defaultValue = new Date();
+      }
+      break;
     case 'workspace-launcher':
       question.type = 'control';
       break;

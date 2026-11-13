@@ -60,15 +60,49 @@ const DateField: React.FC<FormFieldInputProps> = ({ field, value: dateValue, err
 
   useEffect(() => {
     if (dateValue) {
-      if (dateValue instanceof Date) {
-        const hours = dateValue.getHours() < 10 ? `0${dateValue.getHours()}` : `${dateValue.getHours()}`;
-        const minutes = dateValue.getMinutes() < 10 ? `0${dateValue.getMinutes()}` : `${dateValue.getMinutes()}`;
+      // Handle both Date objects and string values (defaultValue may be
+      // serialized to a string during form state propagation)
+      const dateObj = dateValue instanceof Date
+        ? dateValue
+        : typeof dateValue === 'string' && dateValue
+          ? new Date(dateValue)
+          : null;
+      if (dateObj && !isNaN(dateObj.getTime())) {
+        const hours = dateObj.getHours() < 10 ? `0${dateObj.getHours()}` : `${dateObj.getHours()}`;
+        const minutes = dateObj.getMinutes() < 10 ? `0${dateObj.getMinutes()}` : `${dateObj.getMinutes()}`;
         setTime([hours, minutes].join(':'));
       }
     } else {
       setTime('');
     }
   }, [dateValue]);
+
+  // Prefill the time picker with the current time for appointment fields in
+  // enter mode. Runs once on mount.
+  useEffect(() => {
+    if (
+      field.questionOptions.rendering === 'appointment' &&
+      field.datePickerFormat === 'both' &&
+      sessionMode === 'enter' &&
+      !time
+    ) {
+      const now = new Date();
+      const hours = now.getHours() < 10 ? `0${now.getHours()}` : `${now.getHours()}`;
+      const minutes = now.getMinutes() < 10 ? `0${now.getMinutes()}` : `${now.getMinutes()}`;
+      const currentTime = `${hours}:${minutes}`;
+      setTime(currentTime);
+      // If a date already exists, update it with the current time; otherwise
+      // create a new Date at the current moment.
+      const baseDate = dateValue instanceof Date
+        ? new Date(dateValue)
+        : typeof dateValue === 'string' && dateValue
+          ? new Date(dateValue)
+          : new Date();
+      setTimeIfPresent(baseDate, currentTime);
+      setFieldValue(baseDate);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const timePickerLabel = useMemo(
     () =>
